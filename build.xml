@@ -1,0 +1,41 @@
+<project default="compile">
+
+    <property name="src" location="src"/>
+    <property name="build" location="build"/>
+    <property name="dist.dir"  location="dist"/>
+    <property name="doc.dir"  location="doc"/>
+
+    <path id="project.class.path">
+        <pathelement path="${classpath}"/>
+        <pathelement path="${build}"/>
+        <pathelement location="lib/jssc-2.8.0.jar"/>
+    </path>
+
+    <target name="clean">
+        <delete dir="${build}"/>
+        <delete dir="${dist.dir}"/>
+        <delete dir="${doc.dir}"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${build}"/>
+        <javac srcdir="${src}" destdir="${build}" includeantruntime="false">
+            <classpath refid="project.class.path"/>
+        </javac>
+    </target>
+
+    <target name="doc">
+        <delete dir="${doc.dir}"/>
+        <mkdir dir="${doc.dir}"/>
+        <javadoc sourcepath="${src}" destdir="${doc.dir}" packagenames="de.fischl.usbtin" >
+            <classpath refid="project.class.path"/>
+        </javadoc>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.dir}/USBtinLib.jar" basedir="${build}">
+        </jar>
+    </target>
+
+</project>
