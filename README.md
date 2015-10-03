@@ -61,6 +61,82 @@ usbtin.disconnect();
 
 See "USBtinLibDemo" project for a demo application.
 
+
+Filters
+-------
+
+USBtin supports hardware filtering. Especially on high loaded busses this function is useful to
+reduce traffic between USBtin and the host computer. Up to two filter chains (combination of
+filter mask and filter set) are supported. The filter chain length is limited to 2 for the first
+chain and 4 for the second one. Please consult the MCP2515 datasheet for details on filter mechanism
+(section "Message Acceptance Filters and Masks").
+
+Using filters is optional. On startup all messages are accepted.
+
+Example - Accept standard CAN messages with identifier 0x123 and data byte0: 0x45 or 0x67:
+```
+usbtin.connect(...);
+usbtin.setFilter(new FilterChain[] {
+    new FilterChain(
+        new FilterMask(0x7ff, (byte)0xff, (byte)0x00),
+        new FilterValue[] {
+            new FilterValue(0x123, (byte)0x45, (byte)0x00),
+            new FilterValue(0x123, (byte)0x67, (byte)0x00)
+        }
+    )
+});
+usbtin.openCANChannel(...);
+```
+
+Example - Accept standard CAN messages with identifiers 0x050, 0x080, 0x120 - 0x12f:
+```
+usbtin.connect(...);
+usbtin.setFilter(new FilterChain[] {
+    new FilterChain(
+        new FilterMask(0x7f0, (byte)0x00, (byte)0x00),
+        new FilterValue[] {
+            new FilterValue(0x120, (byte)0x00, (byte)0x00)
+        }
+    ),
+    new FilterChain(
+        new FilterMask(0x7ff, (byte)0x00, (byte)0x00),
+        new FilterValue[] {
+            new FilterValue(0x050, (byte)0x00, (byte)0x00),
+            new FilterValue(0x080, (byte)0x00, (byte)0x00)
+        }
+    )
+});
+usbtin.openCANChannel(...);
+```
+
+Example - Accept extended CAN messages with identifiers 0x12345670 - 0x1234567f:
+```
+usbtin.connect(...);
+usbtin.setFilter(new FilterChain[] {
+    new FilterChain(
+        new FilterMask(0x1ffffff0),
+        new FilterValue[] {
+            new FilterValue(0x12345670)
+        }
+    )
+});
+usbtin.openCANChannel(...);
+```
+
+
+Changelog
+---------
+
+1.1.0 (2015-10-03)
+* Added: Allow baudrates without preset (baudrate setting auto calculation).
+* Added: CAN message filtering. setFilter(...).
+* Added: Clear error flags on connect(...).
+* Fixed: First incoming message was ignored. Filter some special characters in serialEvent(...).
+
+1.0.0 (2014-12-04)
+First release
+
+
 License
 -------
 
