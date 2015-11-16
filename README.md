@@ -6,15 +6,14 @@ interace (http://www.fischl.de/usbtin/).
 
 Build
 -----
-Ant is used to build the library from Java source code. To create the JAR file,
+Maven is used to build the library from Java source code. To create the JAR file,
 use
 ```
-ant jar
+mvn clean install
 ```
 
 USBtinLib depends on jSSC (Java Simple Serial Connector) - library for working
-with serial ports from Java. The jSSC library JAR file must be included in
-classpath.
+with serial ports from Java. The jSSC library is added automatically by maven when building it
 https://code.google.com/p/java-simple-serial-connector/
 
 
