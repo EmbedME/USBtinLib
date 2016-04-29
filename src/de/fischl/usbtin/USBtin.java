@@ -20,6 +20,9 @@
 package de.fischl.usbtin;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
@@ -44,11 +47,17 @@ public class USBtin implements SerialPortEventListener {
     /** Listener for CAN messages */
     protected ArrayList<CANMessageListener> listeners = new ArrayList<CANMessageListener>();
     
+    /** Transmit fifo */
+    protected LinkedList<CANMessage> fifoTX = new LinkedList<CANMessage>();
+    
     /** USBtin firmware version */
     protected String firmwareVersion;
     
     /** USBtin hardware version */
     protected String hardwareVersion;
+
+    /** USBtin serial number */
+    protected String serialNumber;
 
     /** Timeout for response from USBtin */
     protected static final int TIMEOUT = 1000;
@@ -84,6 +93,16 @@ public class USBtin implements SerialPortEventListener {
     }
 
     /**
+     * Get serial number string.
+     * During connect() the serial number is requested from USBtin.
+     *
+     * @return Serial number
+     */
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    /**
      * Connect to USBtin on given port.
      * Opens the serial port, clears pending characters and send close command
      * to make sure that we are in configuration mode.
@@ -116,6 +135,7 @@ public class USBtin implements SerialPortEventListener {
             // get version strings
             this.firmwareVersion = this.transmit("v").substring(1);
             this.hardwareVersion = this.transmit("V").substring(1);
+            this.serialNumber = this.transmit("N").substring(1);
 
             // reset overflow error flags
             this.transmit("W2D00");
@@ -198,7 +218,7 @@ public class USBtin implements SerialPortEventListener {
 
                     // check bounds
                     if (xbrp < 2) xbrp = 2;
-                    if (xbrp > 130) xbrp = 130;
+                    if (xbrp > 128) xbrp = 128;
 
                     // calculate diff
                     int xist = x * xbrp;
@@ -323,11 +343,34 @@ public class USBtin implements SerialPortEventListener {
                             for (CANMessageListener listener : listeners) {
                                 listener.receiveCANMessage(canmsg);
                             }
+                            
+                        } else if ((cmd == 'z') || (cmd == 'Z')) {
+                            
+                            // remove first message from transmit fifo and send next one
+                            
+                            fifoTX.removeFirst();
+                         
+                            try {
+                                sendFirstTXFifoMessage();
+                            } catch (USBtinException ex) {
+                                System.err.println(ex);
+                            }
+                            
+                            
                         }
                         
                         incomingMessage.setLength(0);
                         
-                    } else if ((b != '\r') && (b != 0x07)) {
+                    } else if (b == 0x07) {
+                        
+                        // resend first element from tx fifo
+                        try {
+                            sendFirstTXFifoMessage();
+                        } catch (USBtinException ex) {
+                            System.err.println(ex);
+                        }
+                        
+                    } else if (b != '\r') {
                         
                         incomingMessage.append((char) b);
                     }
@@ -357,17 +400,38 @@ public class USBtin implements SerialPortEventListener {
     }
     
     /**
+     * Send first message in tx fifo
+     * 
+     * @throws USBtinException On serial port errors
+     */
+    protected void sendFirstTXFifoMessage() throws USBtinException {
+        
+        if (fifoTX.size() == 0) {
+            return;
+        }
+
+        CANMessage canmsg = fifoTX.getFirst();
+
+        try {
+            serialPort.writeBytes((canmsg.toString() + "\r").getBytes());
+        } catch (SerialPortException e) {
+            throw new USBtinException(e);
+        }
+    }
+    
+    /**
      * Send given can message.
      * 
      * @param canmsg Can message to send
      * @throws USBtinException  On serial port errors
      */
     public void send(CANMessage canmsg) throws USBtinException {
-        try {
-            serialPort.writeBytes((canmsg.toString() + "\r").getBytes());            
-        } catch (SerialPortException e) {
-            throw new USBtinException(e);
-        }
+        
+        fifoTX.add(canmsg);
+        
+        if (fifoTX.size() > 1) return;
+        
+        sendFirstTXFifoMessage();
     }
     
     /**

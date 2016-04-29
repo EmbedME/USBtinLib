@@ -127,6 +127,10 @@ usbtin.openCANChannel(...);
 Changelog
 ---------
 
+1.2.0 (2016-04-29)
+* Added: Transmit fifo.
+* Added: Serial number request.
+
 1.1.0 (2015-10-03)
 * Added: Allow baudrates without preset (baudrate setting auto calculation).
 * Added: CAN message filtering. setFilter(...).
