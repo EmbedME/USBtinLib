@@ -111,6 +111,19 @@ public class USBtin implements SerialPortEventListener {
      * @throws USBtinException Error while connecting to USBtin
      */
     public void connect(String portName) throws USBtinException {
+        connect(portName, 115200);
+    }
+
+    /**
+     * Connect to USBtin on given port.
+     * Opens the serial port, clears pending characters and send close command
+     * to make sure that we are in configuration mode.
+     * 
+     * @param portName Name of virtual serial port
+     * @param baudRate
+     * @throws USBtinException Error while connecting to USBtin
+     */
+    public void connect(String portName, int baudRate ) throws USBtinException {
         
         try {
             
@@ -119,7 +132,7 @@ public class USBtin implements SerialPortEventListener {
 
             // open serial port and initialize it
             serialPort.openPort();
-            serialPort.setParams(115200, 8, 1, 0);
+            serialPort.setParams(baudRate, 8, 1, 0);
 
             // clear port and make sure we are in configuration mode (close cmd)
             serialPort.writeBytes("\rC\r".getBytes());
