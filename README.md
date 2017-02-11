@@ -4,6 +4,9 @@ USBtinLib
 USBtinLib is a Java library for accessing USBtin. USBtin is an USB to CAN
 interace (http://www.fischl.de/usbtin/).
 
+This is just a custom fork from the main code here: https://github.com/EmbedME/USBtinLib
+The author did not merge my pull request with the changes to use maven instead, so keeping my own fork then here.
+
 Build
 -----
 Maven is used to build the library from Java source code. To create the JAR file,
@@ -20,8 +23,15 @@ https://code.google.com/p/java-simple-serial-connector/
 Usage
 -----
 
-Add USBtinLib.jar to the Classpath or as Library to your project. E.g. in
-Netbeans: File -> Project Properties -> Libraries -> Compile -> Add JAR/Folder
+Add the following dependency to your maven project:
+
+```
+  <dependency>
+    <groupId>de.fischl.usbtin</groupId>
+    <artifactId>usbtin</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </dependency>
+```
 
 Import the package containing the library in your Java code:
 ```
