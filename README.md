@@ -25,11 +25,13 @@ Usage
 
 Add the following dependency to your maven project:
 
+```
   <dependency>
     <groupId>de.fischl.usbtin</groupId>
     <artifactId>usbtin</artifactId>
     <version>1.0-SNAPSHOT</version>
   </dependency>
+```
 
 Import the package containing the library in your Java code:
 ```
