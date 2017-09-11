@@ -21,8 +21,8 @@ package de.fischl.usbtin;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
@@ -37,6 +37,8 @@ import jssc.SerialPortEventListener;
  * @author Thomas Fischl <tfischl@gmx.de>
  */
 public class USBtin implements SerialPortEventListener {
+
+    private final Logger logger = LoggerFactory.getLogger(USBtin.class);
 
     /** Serial port (virtual) to which USBtin is connected */
     protected SerialPort serialPort;
@@ -234,7 +236,7 @@ public class USBtin implements SerialPortEventListener {
 
                 this.transmit("s" + String.format("%02x", brpopt | 0xC0) + String.format("%04x", cnfvalues[xopt - 11]));
                 
-                System.out.println("No preset for given baudrate " + baudrate + ". Set baudrate to " + (FOSC / ((brpopt + 1) * 2) / xopt));
+                logger.info("No preset for given baudrate {}. Set baudrate to {}", baudrate, (FOSC / ((brpopt + 1) * 2) / xopt));
                 
             }
 
@@ -242,7 +244,7 @@ public class USBtin implements SerialPortEventListener {
             char modeCh;
             switch (mode) {
                 default:
-                    System.err.println("Mode " + mode + " not supported. Opening listen only.");
+                    logger.warn("Mode {} not supported. Opening listen only.", mode);
                 case LISTENONLY: modeCh = 'L'; break;
                 case LOOPBACK: modeCh = 'l'; break;
                 case ACTIVE: modeCh = 'O'; break;
@@ -353,7 +355,7 @@ public class USBtin implements SerialPortEventListener {
                             try {
                                 sendFirstTXFifoMessage();
                             } catch (USBtinException ex) {
-                                System.err.println(ex);
+                                logger.warn("Error on CAN bus, {}", ex);
                             }
                             
                             
@@ -367,7 +369,7 @@ public class USBtin implements SerialPortEventListener {
                         try {
                             sendFirstTXFifoMessage();
                         } catch (USBtinException ex) {
-                            System.err.println(ex);
+                            logger.warn("Error on CAN bus, {}", ex);
                         }
                         
                     } else if (b != '\r') {
@@ -376,7 +378,7 @@ public class USBtin implements SerialPortEventListener {
                     }
                 }
             } catch (SerialPortException ex) {
-                System.err.println(ex);
+                logger.warn("Error on CAN bus, {}", ex);
             }
         }
     }

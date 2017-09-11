@@ -12,6 +12,7 @@
         <pathelement path="${classpath}"/>
         <pathelement path="${build}"/>
         <pathelement location="lib/jssc-2.8.0.jar"/>
+        <pathelement location="lib/slf4j-api-1.7.2.jar"/>
     </path>
 
     <target name="clean">
